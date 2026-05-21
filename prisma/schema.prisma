@@ -1,0 +1,32 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+model UserProfile {
+  id             String     @id // Matches Clerk's userId
+  email          String
+  targetCalories Int        @default(2000)
+  targetCarbs    Int        @default(225)
+  targetProtein  Int        @default(130)
+  targetFats     Int        @default(65)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  dailyLogs      DailyLog[]
+}
+
+model DailyLog {
+  id        String      @id @default(cuid())
+  userId    String
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String      // ISO date string format: YYYY-MM-DD
+  meals     Json        // Array of: { id: string, description: string, calories: number, protein: number, carbs: number, fats: number, timestamp: string }
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([userId, date])
+}
